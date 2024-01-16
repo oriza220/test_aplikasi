@@ -3,16 +3,15 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:test_aplikasi/models/laptop_model.dart';
 import 'package:test_aplikasi/widgets/custom_divider.dart';
 import 'package:http/http.dart' as http;
-
-class DetailLaptopUnverified extends StatefulWidget {
+class DetailLaptopVerified extends StatefulWidget {
   final String laptopId;
-  const DetailLaptopUnverified({required this.laptopId, super.key});
+  const DetailLaptopVerified({required this.laptopId, super.key});
 
   @override
-  State<DetailLaptopUnverified> createState() => DetailLaptopUnverifiedState();
+  State<DetailLaptopVerified> createState() => _DetailLaptopState();
 }
 
-class DetailLaptopUnverifiedState extends State<DetailLaptopUnverified> {
+class _DetailLaptopState extends State<DetailLaptopVerified> {
   Future<dynamic> getLaptop() async {
     final url =
         "http://192.168.69.107//db_app_test/laptop_detail.php?laptop_id=${widget.laptopId}";
@@ -56,22 +55,9 @@ class DetailLaptopUnverifiedState extends State<DetailLaptopUnverified> {
                     child: Text(
                       "Edit",
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 17,
                           fontFamily: "GodoB",
                           color: Colors.black.withOpacity(0.5)),
-                    ),
-                  )),
-            ),
-            SpeedDialChild(
-              onTap: () {},
-              child: SizedBox(
-                  width: 100,
-                  child: Center(
-                    child: Text(
-                      "Verified",
-                      style: TextStyle(
-                          fontFamily: "GodoB",
-                          color: Colors.blue.withOpacity(0.8),fontSize: 12),
                     ),
                   )),
             ),
@@ -158,9 +144,9 @@ class DetailLaptopUnverifiedState extends State<DetailLaptopUnverified> {
                       Container(
                           margin: EdgeInsets.all(5),
                           child: Text(
-                            "Not VERIFIED",
+                            "VERIFIED",
                             style: TextStyle(
-                                color: Colors.red.withOpacity(0.8),
+                                color: Colors.blue.withOpacity(0.8),
                                 fontSize: 20,
                                 fontFamily: "GodoB",),
                           )),

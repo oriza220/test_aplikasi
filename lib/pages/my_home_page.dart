@@ -1,10 +1,14 @@
+
+
 import 'package:flutter/material.dart';
-import 'package:test_aplikasi/pages/detail_laptop.dart';
-import 'package:test_aplikasi/pages/detail_laptop_unverified.dart';
-import 'package:test_aplikasi/pages/detail_pinjam_laptop.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_aplikasi/models/laptops_model.dart';
+
 import 'package:test_aplikasi/pages/user_page.dart';
-import 'package:test_aplikasi/utilities/settings.dart';
+
+import 'package:test_aplikasi/widgets/laptop_recommendation_card.dart';
 import 'package:test_aplikasi/widgets/custom_divider.dart';
+import 'package:http/http.dart' as http;
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -14,10 +18,47 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> {
+  Future<SharedPreferences> _getSharedPreferences(BuildContext context) async {
+ return await SharedPreferences.getInstance();
+}
+  Future<dynamic> getLaptop() async {
+    const url = "http://192.168.69.107//db_app_test/api.php?order_id=0";
+    final uri = Uri.parse(url);
+    final response = await http.get(uri);
+    await Future.delayed(Duration(seconds: 1));
+    final body = response.body;
+    return body;
+  }
+
+  Future<dynamic> getUserVerified() async {
+    final url =
+        "http://192.168.69.107/db_app_test/user_info.php?user_email=${finalUserEmail}";
+    final uri = Uri.parse(url);
+    final response = await http.get(uri);
+    final body = response.body;
+    return body;
+  }
+  
+
+  TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.blue.shade200,
+        foregroundColor: Colors.black,
+        surfaceTintColor: Colors.blue,
         title: Row(
           children: [
             Text("Pinjam Dulu",
@@ -25,11 +66,10 @@ class MyHomePageState extends State<MyHomePage> {
                     fontFamily: "GodoB", fontSize: 25, color: Colors.white)),
             Padding(padding: EdgeInsets.only(left: 115)),
             IconButton(
-                onPressed: (){
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => UserPage()));},
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => UserPage()));
+                },
                 icon: Icon(
                   Icons.person_outline_outlined,
                   color: Colors.white,
@@ -39,555 +79,352 @@ class MyHomePageState extends State<MyHomePage> {
         ),
         leading: Padding(
           padding: const EdgeInsets.only(left: 10),
-          child: CircleAvatar(
-              child: Image.network(
-                  "https://cdn.discordapp.com/attachments/798745994103095322/1181175263158095913/logo_2.png?ex=65801a2f&is=656da52f&hm=bdf5780a790a0a899bcbfb6b5a942f50e68da892d4669bb95889a0052cb772fd&")),
+          child: CircleAvatar(child: Image.asset("assets/logo.png")),
         ),
         elevation: 40,
-        backgroundColor: Colors.blue[200],
         automaticallyImplyLeading: false,
       ),
-      backgroundColor: Colors.blue,
       body: Stack(
         children: [
           Container(
-              height: double.infinity,
-              width: double.infinity,
-              child: Image.network(
-                "https://cdn.discordapp.com/attachments/611552007764836372/1180139376085303316/Untitled-2.png?ex=657c5571&is=6569e071&hm=1dcffb46bd38c0a0365bdc760d8a7c70583d5e7c2bbd91470d7ceee0c2b62282&",
-                fit: BoxFit.cover,
-              )),
+            alignment: Alignment.topCenter,
+            width: 500,
+            height: 240,
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage(
+                      "assets/laptop_page_background.jpg",
+                    ),
+                    fit: BoxFit.fill),
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.elliptical(25, 25),
+                    bottomRight: Radius.elliptical(25, 25))),
+          ),
           SingleChildScrollView(
+              padding: EdgeInsets.only(left: 7, right: 7),
               child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(padding: EdgeInsets.only(top: 10)),
-              Container(
-                padding: EdgeInsets.only(left: 5, right: 5),
-                child: Container(
-                  width: double.infinity,
-                  height: 40,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius:
-                          BorderRadius.all(Radius.elliptical(13, 13))),
-                  child: Center(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                      padding: EdgeInsets.only(
+                    top: 10,
+                  )),
+                  Container(
+                    padding: EdgeInsets.only(left: 5, right: 5),
+                    width: 400,
+                    height: 40,
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(12.0),
+                          ),
+                          color: Colors.white,
+                          border: Border.all(color: Colors.blue, width: 2)),
                       child: TextField(
-                    decoration: InputDecoration(
-                        contentPadding: EdgeInsets.only(top: 3),
-                        prefixIcon: Icon(Icons.search),
-                        suffixIcon: IconButton(
-                            onPressed: () {}, icon: Icon(Icons.clear)),
-                        hintText: "Search.....",
-                        border: InputBorder.none),
-                  )),
-                ),
-              ),
-              Container(
-                  padding: EdgeInsets.only(top: 10, left: 10, bottom: 10),
-                  child: Text(
-                    "Browse categories",
-                    style: TextStyle(
-                        fontFamily: "GodoB", fontSize: 15, color: Colors.white),
-                  )),
-              Container(
-                color: Colors.transparent,
-                height: 90,
-                child: ListView(
-                  // This next line does the trick.
-                  scrollDirection: Axis.horizontal,
-                  children: <Widget>[
-                    Padding(padding: EdgeInsets.only(left: 5)),
-                    Container(
-                      width: 120,
-                      child: Material(
-                        borderRadius:
-                            BorderRadius.all(Radius.elliptical(13, 13)),
-                        elevation: 3,
-                        child: (Column(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(top: 20),
-                              child: SizedBox(
-                                height: 35,
-                                width: 35,
-                                child: Placeholder(),
-                              ),
-                            ),
-                            Padding(padding: EdgeInsets.only(top: 5)),
-                            Flexible(
-                                child: Text(
-                              "Gaming Laptop",
-                              style: TextStyle(fontFamily: "GodoB"),
-                            ))
-                          ],
-                        )),
-                      ),
-                    ),
-                    Padding(padding: EdgeInsets.only(left: 5)),
-                    Container(
-                      width: 105,
-                      child: Material(
-                        borderRadius:
-                            BorderRadius.all(Radius.elliptical(13, 13)),
-                        elevation: 5,
-                        child: (Column(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(top: 20),
-                              child: SizedBox(
-                                height: 35,
-                                width: 35,
-                                child: Placeholder(),
-                              ),
-                            ),
-                            Padding(padding: EdgeInsets.only(top: 5)),
-                            Flexible(
-                                child: Text(
-                              "Notebook",
-                              style: TextStyle(fontFamily: "GodoB"),
-                            ))
-                          ],
-                        )),
-                      ),
-                    ),
-                    Padding(padding: EdgeInsets.only(left: 5)),
-                    Container(
-                      width: 105,
-                      child: Material(
-                        borderRadius:
-                            BorderRadius.all(Radius.elliptical(13, 13)),
-                        elevation: 5,
-                        child: (Column(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(top: 20),
-                              child: SizedBox(
-                                height: 35,
-                                width: 35,
-                                child: Placeholder(),
-                              ),
-                            ),
-                            Padding(padding: EdgeInsets.only(top: 5)),
-                            Flexible(
-                                child: Text(
-                              "Netbbook",
-                              style: TextStyle(fontFamily: "GodoB"),
-                            ))
-                          ],
-                        )),
-                      ),
-                    ),
-                    Padding(padding: EdgeInsets.only(left: 5)),
-                    Container(
-                      width: 115,
-                      child: Material(
-                        borderRadius:
-                            BorderRadius.all(Radius.elliptical(13, 13)),
-                        elevation: 5,
-                        child: (Column(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(top: 20),
-                              child: SizedBox(
-                                height: 35,
-                                width: 35,
-                                child: Placeholder(),
-                              ),
-                            ),
-                            Padding(padding: EdgeInsets.only(top: 5)),
-                            Flexible(
-                                child: Text(
-                              "Touch Screen",
-                              style: TextStyle(fontFamily: "GodoB"),
-                            ))
-                          ],
-                        )),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                  padding: EdgeInsets.only(top: 20, left: 10),
-                  child: Text(
-                    "Recommendation",
-                    style: TextStyle(
-                        fontFamily: "GodoB", fontSize: 15, color: Colors.white),
-                  )),
-              Padding(padding: EdgeInsets.only(top: 10)),
-              Container(
-                child: InkWell(
-                  splashColor: Colors.blue,
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => DetailPinjamLaptop()));
-                  },
-                  child: Card(
-                    surfaceTintColor: Colors.transparent,
-                    elevation: 10,
-                    child: Column(
-                      children: [
-                        Container(padding: EdgeInsets.only(top: 10)),
-                        ListTile(
-                          leading: SizedBox(
-                            width: 60,
-                            height: 60,
-                            child: Placeholder(),
+                        style: TextStyle(color: Colors.blue),
+                        controller: _searchController,
+                        scrollPadding: EdgeInsets.only(top: 10),
+                        onChanged: (value) {
+                          print('Value: $value');
+                        },
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.only(top: 10),
+                          hintText: 'Search...',
+                          hintStyle: TextStyle(color: Colors.blue),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: Colors.blue,
                           ),
-                          title: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Nama Laptop lorem ispum dolor sit amet",
-                                    style: TextStyle(
-                                        fontSize: 17, fontFamily: "GodoB")),
-                                Container(
-                                    child: Text("Gaming Laptop",
-                                        style: TextStyle(
-                                          color: Colors.black.withOpacity(0.6),
-                                          fontSize: 11,
-                                          fontFamily: "GodoB",
-                                        )))
-                              ],
+                          suffixIcon: IconButton(
+                            onPressed: _clearSearch,
+                            icon: Icon(Icons.clear, color: Colors.blue),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(10.0),
                             ),
                           ),
                         ),
-                        Container(padding: EdgeInsets.only(top: 0)),
-                        Container(
-                            padding: EdgeInsets.only(left: 15),
-                            alignment: Alignment.centerLeft,
-                            child: Text("Rp. ***.*** / Week",
-                                style: TextStyle(
-                                    fontSize: 17,
-                                    fontFamily: "GodoB",
-                                    color: Colors.red.withOpacity(0.9)))),
-                        Container(padding: EdgeInsets.only(top: 10)),
-                        CustomDivider(width: double.infinity),
-                        Container(
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.elliptical(13, 13)),
-                            ),
-                            child: ExpansionTile(
-                              title: Row(
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("Layar",
-                                          style: TextStyle(
-                                              color:
-                                                  Colors.black.withOpacity(0.6),
-                                              fontSize: 15,
-                                              fontFamily: "GodoB")),
-                                      Text("14'",
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontFamily: "GodoB")),
-                                    ],
-                                  ),
-                                  Container(
-                                    padding:
-                                        EdgeInsets.only(left: 20, right: 20),
-                                    child: Container(
-                                      color: Colors.black.withOpacity(0.6),
-                                      height: 43,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("Prosesor",
-                                          style: TextStyle(
-                                              color:
-                                                  Colors.black.withOpacity(0.6),
-                                              fontSize: 15,
-                                              fontFamily: "GodoB")),
-                                      Text("Lorem ipsum dolor sit amet",
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontFamily: "GodoB")),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              children: [
-                                ListTile(
-                                  title: Row(
-                                    children: [
-                                      Flexible(
-                                          child: Text(
-                                        "Lorem ipsum dolor sit amet, consectetur \nadipiscing elit. Mauris malesuada viverra diam ",
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                        ),
-                                      ))
-                                    ],
-                                  ),
-                                ),
-                                ListTile(
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Container(
-                                        alignment: Alignment.centerRight,
-                                        child: SizedBox(
-                                            width: 95,
-                                            child: ElevatedButton(
-                                                style: ButtonStyle(
-                                                    shape: MaterialStatePropertyAll(
-                                                        ContinuousRectangleBorder(
-                                                            borderRadius: BorderRadius.all(
-                                                                Radius.elliptical(
-                                                                    13, 13)))),
-                                                    elevation:
-                                                        MaterialStatePropertyAll(
-                                                            5),
-                                                    side: MaterialStateProperty.all(
-                                                        BorderSide(
-                                                            color:
-                                                                Colors.blue)),
-                                                    surfaceTintColor:
-                                                        MaterialStatePropertyAll(
-                                                            Colors.white)),
-                                                onPressed: () {
-                                                  Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              DetailLaptopUnverified()));
-                                                },
-                                                child: Text(
-                                                  "Pinjam",
-                                                  style: TextStyle(
-                                                    fontFamily: "GodoB",
-                                                    color: Colors.blue
-                                                        .withOpacity(0.7),
-                                                    // color: Colors.blue[200],
-                                                  ),
-                                                ))),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            )),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-              Padding(padding: EdgeInsets.only(top: 10)),
-              Container(
-                child: InkWell(
-                  splashColor: Colors.blue,
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => DetailLaptop()));
-                  },
-                  child: Card(
-                    surfaceTintColor: Colors.transparent,
-                    elevation: 10,
-                    child: Column(
-                      children: [
-                        Container(padding: EdgeInsets.only(top: 10)),
-                        ListTile(
-                          leading: SizedBox(
-                            width: 60,
-                            height: 60,
-                            child: Placeholder(),
-                          ),
-                          title: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Nama Laptop lorem ispum dolor sit amet",
+                  Container(
+                      padding: EdgeInsets.only(top: 10, left: 10, bottom: 5),
+                      child: Text(
+                        "Browse categories",
+                        style: TextStyle(
+                          fontFamily: "GodoB",
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
+                      )),
+                  CustomDivider(width: 500),
+                  Padding(padding: EdgeInsets.only(top: 10)),
+                  Container(
+                    color: Colors.transparent,
+                    height: 62,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: <Widget>[
+                        Padding(padding: EdgeInsets.only(left: 5)),
+                        InkWell(
+                          onTap: () {
+                            print('Container tapped');
+                          },
+                          child: Container(
+                            width: 63,
+                            child: Material(
+                              borderRadius:
+                                  BorderRadius.all(Radius.elliptical(13, 13)),
+                              elevation: 3,
+                              child: Column(
+                                children: [
+                                  Padding(padding: EdgeInsets.only(top: 5)),
+                                  Container(
+                                    alignment: Alignment.topLeft,
+                                    height: 40,
+                                    width: 40,
+                                    child: Image.asset(
+                                        "assets/gaming_laptop_icon.png"),
+                                  ),
+                                  Flexible(
+                                      child: Text(
+                                    "Gaming",
                                     style: TextStyle(
-                                        fontSize: 17, fontFamily: "GodoB")),
-                                Container(
-                                    child: Text("Gaming Laptop",
-                                        style: TextStyle(
-                                          color: Colors.black.withOpacity(0.6),
-                                          fontSize: 11,
-                                          fontFamily: "GodoB",
-                                        ))),
-                                Container(
-                                    child: Text("Verified",
-                                        style: TextStyle(
-                                          color: Colors.blue,
-                                          fontSize: 11,
-                                          fontFamily: "GodoB",
-                                        ))),
-                                Container(
-                                    child: Text("Rp. 123.456 / Week",
-                                        style: TextStyle(
-                                          color: Colors.black.withOpacity(0.6),
-                                          fontSize: 11,
-                                          fontFamily: "GodoB",
-                                        ))),
-                              ],
+                                        fontFamily: "GodoB",
+                                        color: Colors.blue,
+                                        fontSize: 8),
+                                  ))
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                        Container(padding: EdgeInsets.only(top: 0)),
-                        Container(padding: EdgeInsets.only(top: 10)),
-                        CustomDivider(width: double.infinity),
-                        Container(
-                            decoration: BoxDecoration(
+                        Padding(padding: EdgeInsets.only(left: 5)),
+                        InkWell(
+                          onTap: () {
+                            print('Container tapped');
+                          },
+                          child: Container(
+                            width: 65,
+                            child: Material(
                               borderRadius:
                                   BorderRadius.all(Radius.elliptical(13, 13)),
-                            ),
-                            child: ExpansionTile(
-                              title: Row(
+                              elevation: 3,
+                              child: (Column(
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("Layar",
-                                          style: TextStyle(
-                                              color:
-                                                  Colors.black.withOpacity(0.6),
-                                              fontSize: 15,
-                                              fontFamily: "GodoB")),
-                                      Text("14'",
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontFamily: "GodoB")),
-                                    ],
-                                  ),
+                                  Padding(padding: EdgeInsets.only(top: 10)),
                                   Container(
-                                    padding:
-                                        EdgeInsets.only(left: 20, right: 20),
-                                    child: Container(
-                                      color: Colors.black.withOpacity(0.6),
-                                      height: 43,
-                                      width: 1,
-                                    ),
+                                    alignment: Alignment.topLeft,
+                                    height: 35,
+                                    width: 40,
+                                    child: Image.asset(
+                                        "assets/notebook_laptop_icon.png"),
                                   ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("Prosesor",
-                                          style: TextStyle(
-                                              color:
-                                                  Colors.black.withOpacity(0.6),
-                                              fontSize: 15,
-                                              fontFamily: "GodoB")),
-                                      Text("Lorem ipsum dolor sit amet",
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontFamily: "GodoB")),
-                                    ],
-                                  ),
+                                  Flexible(
+                                      child: Text(
+                                    "Notebook",
+                                    style: TextStyle(
+                                        fontFamily: "GodoB",
+                                        color: Colors.blue,
+                                        fontSize: 8),
+                                  ))
                                 ],
-                              ),
-                              children: [
-                                ListTile(
-                                  title: Row(
-                                    children: [
-                                      Flexible(
-                                          child: Text(
-                                        "Lorem ipsum dolor sit amet, consectetur \nadipiscing elit. Mauris malesuada viverra diam ",
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                        ),
-                                      ))
-                                    ],
+                              )),
+                            ),
+                          ),
+                        ),
+                        Padding(padding: EdgeInsets.only(left: 5)),
+                        InkWell(
+                          onTap: () {
+                            print('Container tapped');
+                          },
+                          child: Container(
+                            width: 65,
+                            child: Material(
+                              borderRadius:
+                                  BorderRadius.all(Radius.elliptical(13, 13)),
+                              elevation: 3,
+                              child: (Column(
+                                children: [
+                                  Padding(padding: EdgeInsets.only(top: 8)),
+                                  Container(
+                                    alignment: Alignment.topLeft,
+                                    height: 37,
+                                    width: 40,
+                                    child: Image.asset(
+                                        "assets/netbook_laptop_icon.png"),
                                   ),
-                                ),
-                                ListTile(
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Container(
-                                        alignment: Alignment.centerRight,
-                                        child: SizedBox(
-                                            width: 80,
-                                            child: ElevatedButton(
-                                                style: ButtonStyle(
-                                                    shape: MaterialStatePropertyAll(
-                                                        ContinuousRectangleBorder(
-                                                            borderRadius: BorderRadius.all(
-                                                                Radius.elliptical(
-                                                                    13, 13)))),
-                                                    elevation:
-                                                        MaterialStatePropertyAll(
-                                                            5),
-                                                    side: MaterialStateProperty.all(
-                                                        BorderSide(
-                                                            color:
-                                                                Colors.white)),
-                                                    surfaceTintColor:
-                                                        MaterialStatePropertyAll(
-                                                            Colors.white)),
-                                                onPressed: () {},
-                                                child: Text(
-                                                  "Edit",
-                                                  style: TextStyle(
-                                                    fontFamily: "GodoB",
-                                                    color: Colors.black
-                                                        .withOpacity(0.5),
-                                                    // color: Colors.blue[200],
-                                                  ),
-                                                ))),
-                                      ),
-                                      Container(
-                                          padding: EdgeInsets.only(
-                                              left: 5, right: 5)),
-                                      Container(
-                                        alignment: Alignment.centerRight,
-                                        child: SizedBox(
-                                            width: 90,
-                                            child: ElevatedButton(
-                                                style: ButtonStyle(
-                                                    shape: MaterialStatePropertyAll(
-                                                        ContinuousRectangleBorder(
-                                                            borderRadius: BorderRadius.all(
-                                                                Radius.elliptical(
-                                                                    13, 13)))),
-                                                    elevation:
-                                                        MaterialStatePropertyAll(
-                                                            5),
-                                                    side: MaterialStateProperty.all(
-                                                        BorderSide(
-                                                            color:
-                                                                Colors.white)),
-                                                    surfaceTintColor:
-                                                        MaterialStatePropertyAll(
-                                                            Colors.white)),
-                                                onPressed: () {},
-                                                child: Text(
-                                                  "Hapus",
-                                                  style: TextStyle(
-                                                    fontFamily: "GodoB",
-                                                    color: Colors.red
-                                                        .withOpacity(0.7),
-                                                    // color: Colors.blue[200],
-                                                  ),
-                                                ))),
-                                      ),
-                                    ],
+                                  Flexible(
+                                      child: Text(
+                                    "Netbook",
+                                    style: TextStyle(
+                                        fontFamily: "GodoB",
+                                        color: Colors.blue,
+                                        fontSize: 9),
+                                  ))
+                                ],
+                              )),
+                            ),
+                          ),
+                        ),
+                        Padding(padding: EdgeInsets.only(left: 5)),
+                        InkWell(
+                          onTap: () {
+                            print('Container tapped');
+                          },
+                          child: Container(
+                            width: 85,
+                            child: Material(
+                              borderRadius:
+                                  BorderRadius.all(Radius.elliptical(13, 13)),
+                              elevation: 3,
+                              child: (Column(
+                                children: [
+                                  Padding(padding: EdgeInsets.only(top: 7)),
+                                  Container(
+                                    alignment: Alignment.topLeft,
+                                    height: 38,
+                                    width: 40,
+                                    child: Image.asset(
+                                        "assets/business_laptop_icon.png"),
                                   ),
-                                ),
-                              ],
-                            )),
+                                  Flexible(
+                                      child: Text(
+                                    "Business Laptop",
+                                    style: TextStyle(
+                                        fontFamily: "GodoB",
+                                        color: Colors.blue,
+                                        fontSize: 9),
+                                  ))
+                                ],
+                              )),
+                            ),
+                          ),
+                        ),
+                        Padding(padding: EdgeInsets.only(left: 5)),
+                        InkWell(
+                          onTap: () {
+                            print('Container tapped');
+                          },
+                          child: Container(
+                            width: 85,
+                            child: Material(
+                              borderRadius:
+                                  BorderRadius.all(Radius.elliptical(13, 13)),
+                              elevation: 3,
+                              child: (Column(
+                                children: [
+                                  Padding(padding: EdgeInsets.only(top: 7)),
+                                  Container(
+                                    alignment: Alignment.topLeft,
+                                    height: 38,
+                                    width: 40,
+                                    child: Image.asset(
+                                        "assets/tablet_laptop_icon.png"),
+                                  ),
+                                  Flexible(
+                                      child: Text(
+                                    "Tablet Laptop",
+                                    style: TextStyle(
+                                        fontFamily: "GodoB",
+                                        color: Colors.blue,
+                                        fontSize: 9),
+                                  ))
+                                ],
+                              )),
+                            ),
+                          ),
+                        ),
+                        Padding(padding: EdgeInsets.only(left: 5)),
+                        InkWell(
+                          onTap: () {
+                            print('Container tapped');
+                          },
+                          child: Container(
+                            width: 75,
+                            child: Material(
+                              borderRadius:
+                                  BorderRadius.all(Radius.elliptical(13, 13)),
+                              elevation: 3,
+                              child: (Column(
+                                children: [
+                                  Padding(padding: EdgeInsets.only(top: 10)),
+                                  Container(
+                                    alignment: Alignment.topLeft,
+                                    height: 35,
+                                    width: 40,
+                                    child: Image.asset(
+                                        "assets/touch_screen_laptop_icon.png"),
+                                  ),
+                                  Flexible(
+                                      child: Text(
+                                    "Touch Screen",
+                                    style: TextStyle(
+                                        fontFamily: "GodoB",
+                                        color: Colors.blue,
+                                        fontSize: 9),
+                                  ))
+                                ],
+                              )),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
-              ),
-            ],
-          )),
+                  Container(
+                      padding: EdgeInsets.only(top: 10, left: 10),
+                      child: Text(
+                        "Recommendation",
+                        style: TextStyle(
+                            fontFamily: "GodoB",
+                            fontSize: 15,
+                            color: Colors.white),
+                      )),
+                  Padding(padding: EdgeInsets.only(top: 10)),
+                  CustomDivider(width: 500),
+                  Padding(padding: EdgeInsets.only(top: 10)),
+                  FutureBuilder(
+                      future: getLaptop(),
+                      builder: (context, snapshot) {
+                        // log(snapshot.toString());
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          if (snapshot.hasData) {
+                            var laptops = laptopsModelFromJson(snapshot.data!);
+                            // log(laptops.toString());
+                            return Column(
+                              children: [
+                                ...laptops
+                                    .map((laptop) => LaptopRecommendationCard(
+                                        laptopId: laptop.laptopId,
+                                        laptopName: laptop.laptopName,
+                                        laptopPrice:
+                                            int.parse(laptop.laptopPrice),
+                                        laptopProcessor: laptop.laptopProcessor,
+                                        laptopScreen: laptop.laptopScreen,
+                                        laptopType: laptop.laptopType,
+                                        laptopDescription:
+                                            laptop.laptopDescription,
+                                            laptopGambar: laptop.laptopGambar,))
+                                    .toList()
+                              ],
+                            );
+                          }
+
+                          return Container();
+                        }
+
+                        return Container(
+                          padding: EdgeInsets.only(top: 160),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                                color: Colors.blue.shade200),
+                          ),
+                        );
+                      }),
+                ],
+              )),
         ],
       ),
     );

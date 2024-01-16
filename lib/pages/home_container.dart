@@ -21,12 +21,13 @@ class _HomeContainerState extends State<HomeContainer> {
     TransactionPage(),
     UserPage(),
   ];
+  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _widgetOptions[_selectedIndex],
-      backgroundColor: Colors.blue[100],
+      backgroundColor: Colors.white,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
